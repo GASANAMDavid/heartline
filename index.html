@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Heartline</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Petit+Formal+Script&family=DM+Sans:wght@300;400;500&display=swap');
+
+:root {
+  --ink:    #180f14;
+  --rose:   #b05472;
+  --rose2:  #8a3d57;
+  --blush:  #f2dde4;
+  --cream:  #fdf8f5;
+  --gold:   #c9a96e;
+  --mist:   #e2cdd3;
+  --soft:   #f7eff2;
+  --dark:   #120b0f;
+  --dark2:  #1c1018;
+  --dark3:  #251520;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--cream);
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+/* ── VIEWS ── */
+.view { display:none; min-height:100vh; min-height:100dvh; flex-direction:column; }
+.view.active { display:flex; }
+
+/* ════════════════════════════════════
+   LOVER PAGE
+════════════════════════════════════ */
+#loverPage {
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px 48px;
+  position: relative;
+  background: var(--cream);
+}
+
+.bg-glow {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(ellipse 60% 40% at 15% 15%, rgba(176,84,114,0.09) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 50% at 85% 85%, rgba(201,169,110,0.08) 0%, transparent 60%);
+}
+
+.petals { position:fixed; inset:0; pointer-events:none; z-index:1; overflow:hidden; }
+.petal {
+  position: absolute;
+  width: 9px; height: 13px;
+  background: radial-gradient(ellipse, #e8b2bc, #d08898);
+  border-radius: 50% 0 50% 0;
+  opacity: 0;
+  animation: petalFall linear infinite;
+}
+@keyframes petalFall {
+  0%   { opacity:0; transform: translateY(-20px) rotate(0deg); }
+  8%   { opacity: 0.5; }
+  92%  { opacity: 0.25; }
+  100% { opacity:0; transform: translateY(108vh) rotate(600deg); }
+}
+
+.lover-content {
+  position: relative; z-index: 2;
+  width: 100%; max-width: 400px;
+  display: flex; flex-direction: column; align-items: center;
+}
+
+/* Heartline wordmark */
+.wordmark {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 32px;
+  opacity: 0; animation: riseIn 1s ease 0.2s forwards;
+}
+.wordmark-line {
+  width: 28px; height: 1px;
+  background: linear-gradient(to right, transparent, var(--gold));
+}
+.wordmark-line.right {
+  background: linear-gradient(to left, transparent, var(--gold));
+}
+.wordmark-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic; font-weight: 300;
+  font-size: 0.8rem; color: var(--gold);
+  letter-spacing: 0.3em; text-transform: uppercase;
+}
+
+/* Card */
+.card {
+  background: white; width: 100%;
+  padding: 44px 36px 40px;
+  position: relative;
+  box-shadow:
+    0 1px 2px rgba(24,15,20,0.04),
+    0 8px 28px rgba(24,15,20,0.09),
+    0 36px 72px rgba(24,15,20,0.05);
+  opacity: 0; animation: riseIn 1s ease 0.5s forwards;
+}
+.card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+  background: linear-gradient(90deg, var(--rose), var(--gold), var(--rose));
+}
+.card::after {
+  content:''; position:absolute; bottom:0; left:0; right:0; height:1px;
+  background: linear-gradient(90deg, transparent, var(--mist), transparent);
+}
+
+.card-eyebrow {
+  font-size: 0.62rem; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--gold); text-align: center; margin-bottom: 8px;
+}
+
+.card-date {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic; font-size: 0.85rem;
+  color: var(--mist); text-align: center; margin-bottom: 30px;
+}
+
+.heart-beat {
+  text-align: center; font-size: 1.5rem; margin-bottom: 26px;
+  display: block; animation: hb 2.8s ease infinite;
+}
+@keyframes hb {
+  0%,100%{transform:scale(1)}
+  25%{transform:scale(1.2)}
+  45%{transform:scale(1)}
+  65%{transform:scale(1.1)}
+}
+
+.message-body {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic; font-size: 1.42rem; line-height: 1.78;
+  color: var(--ink); text-align: center;
+  min-height: 130px;
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.message-body.out { opacity:0; transform:translateY(-10px); }
+.message-body.in  { opacity:1; transform:translateY(0); }
+
+.loading-wrap {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 14px; padding: 10px 0;
+}
+.dots { display:flex; gap:6px; }
+.dots span {
+  width:6px; height:6px; border-radius:50%; background:var(--rose);
+  animation: db 1.2s ease infinite;
+}
+.dots span:nth-child(2){animation-delay:.2s}
+.dots span:nth-child(3){animation-delay:.4s}
+@keyframes db{0%,100%{transform:translateY(0);opacity:.35}50%{transform:translateY(-6px);opacity:1}}
+
+.loading-label {
+  font-family:'Cormorant Garamond',serif; font-style:italic;
+  font-size:.9rem; color:var(--rose); opacity:.7;
+}
+
+.card-rule {
+  display:flex; align-items:center; justify-content:center;
+  gap:10px; margin:28px 0 22px; color:var(--mist);
+  font-size:.55rem; letter-spacing:.3em;
+}
+.card-rule::before,.card-rule::after {
+  content:''; flex:1; height:1px;
+  background: linear-gradient(to right,transparent,var(--mist),transparent);
+}
+
+.card-sig {
+  font-family:'Petit Formal Script',cursive;
+  font-size:1.35rem; color:var(--rose);
+  text-align:center; letter-spacing:.04em;
+}
+
+/* Below card */
+.day-count {
+  margin-top:24px; font-size:.66rem; color:var(--gold);
+  letter-spacing:.18em; text-transform:uppercase; text-align:center;
+  opacity:0; animation: riseIn 1s ease 1.2s forwards;
+}
+
+/* Secret trigger */
+.secret { position:fixed; top:0; right:0; width:70px; height:70px; z-index:100; opacity:0; cursor:pointer; }
+
+/* Float hearts */
+.fheart {
+  position:fixed; pointer-events:none;
+  font-size:1.2rem;
+  animation: fh 3.5s ease-out forwards; z-index:99;
+}
+@keyframes fh{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-160px) scale(.4)}}
+
+@keyframes riseIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+
+
+/* ════════════════════════════════════
+   PIN SCREEN
+════════════════════════════════════ */
+#pinPage {
+  background: var(--dark);
+  align-items:center; justify-content:center; padding:40px 28px;
+}
+
+.pin-wrap {
+  width:100%; max-width:340px;
+  display:flex; flex-direction:column; align-items:center; gap:0;
+}
+
+.pin-logo {
+  font-family:'Petit Formal Script',cursive;
+  font-size:2.2rem; color:var(--rose);
+  margin-bottom:6px;
+}
+.pin-tagline {
+  font-size:.65rem; letter-spacing:.25em; text-transform:uppercase;
+  color:rgba(255,255,255,.2); margin-bottom:44px;
+}
+
+.pin-label {
+  font-size:.65rem; letter-spacing:.2em; text-transform:uppercase;
+  color:rgba(255,255,255,.3); margin-bottom:16px; align-self:flex-start;
+}
+
+.pin-dots {
+  display:flex; gap:14px; margin-bottom:36px;
+}
+.pin-dot {
+  width:12px; height:12px; border-radius:50%;
+  border:1.5px solid rgba(255,255,255,.2);
+  transition: all .3s ease;
+}
+.pin-dot.filled { background:var(--rose); border-color:var(--rose); }
+
+.pin-grid {
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:10px; width:100%;
+}
+.pin-key {
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.08);
+  color:white; font-family:'DM Sans',sans-serif;
+  font-size:1.3rem; font-weight:300;
+  padding:18px 0; cursor:pointer;
+  transition:all .2s ease; text-align:center;
+  -webkit-user-select:none; user-select:none;
+}
+.pin-key:active { background:rgba(176,84,114,.3); border-color:var(--rose); }
+.pin-key.del { font-size:.9rem; color:rgba(255,255,255,.4); }
+.pin-key.empty { visibility:hidden; }
+
+.pin-error {
+  margin-top:20px; font-size:.75rem;
+  color:var(--rose); letter-spacing:.08em;
+  opacity:0; transition:opacity .3s ease;
+}
+.pin-error.show { opacity:1; }
+
+
+/* ════════════════════════════════════
+   ADMIN PAGE
+════════════════════════════════════ */
+#adminPage {
+  background: var(--dark); color:white;
+}
+
+.admin-nav {
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 52px 24px 20px;
+  border-bottom:1px solid rgba(255,255,255,.06);
+  background: linear-gradient(180deg, var(--dark2) 0%, var(--dark) 100%);
+}
+
+.admin-brand {
+  font-family:'Petit Formal Script',cursive;
+  font-size:1.4rem; color:var(--rose);
+}
+
+.admin-tabs {
+  display:flex; gap:4px;
+}
+.atab {
+  background:none; border:none; color:rgba(255,255,255,.3);
+  font-family:'DM Sans',sans-serif; font-size:.68rem;
+  letter-spacing:.15em; text-transform:uppercase;
+  padding:7px 12px; cursor:pointer;
+  border-bottom:2px solid transparent;
+  transition:all .25s ease;
+}
+.atab.active { color:var(--rose); border-bottom-color:var(--rose); }
+
+.admin-body {
+  flex:1; overflow-y:auto; padding:28px 24px 48px;
+  display:flex; flex-direction:column; gap:24px;
+}
+
+/* Section */
+.sec-label {
+  font-size:.6rem; letter-spacing:.25em; text-transform:uppercase;
+  color:rgba(255,255,255,.28); margin-bottom:10px;
+}
+
+/* Lover selector */
+.lover-pills { display:flex; flex-wrap:wrap; gap:8px; }
+.lover-pill {
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.1);
+  color:rgba(255,255,255,.55);
+  font-family:'DM Sans',sans-serif; font-size:.75rem;
+  padding:8px 16px; cursor:pointer;
+  transition:all .25s ease; letter-spacing:.04em;
+}
+.lover-pill.active {
+  background:rgba(176,84,114,.2);
+  border-color:var(--rose); color:var(--rose);
+}
+
+/* Mode grid */
+.mode-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.mode-btn {
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.09);
+  color:rgba(255,255,255,.55);
+  font-family:'DM Sans',sans-serif; font-size:.75rem;
+  padding:14px 12px; cursor:pointer;
+  transition:all .25s ease; text-align:left; line-height:1.4;
+}
+.mode-btn .mi { font-size:1rem; display:block; margin-bottom:5px; }
+.mode-btn .mn { display:block; font-weight:500; color:rgba(255,255,255,.8); }
+.mode-btn .md { display:block; font-size:.66rem; color:rgba(255,255,255,.3); margin-top:2px; }
+.mode-btn.sel { background:rgba(176,84,114,.18); border-color:var(--rose); }
+.mode-btn.sel .mn { color:var(--rose); }
+
+/* Custom textarea */
+.custom-area {
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.1);
+  color:white; font-family:'DM Sans',sans-serif;
+  font-size:.85rem; padding:14px;
+  resize:none; height:100px; line-height:1.6;
+  outline:none; width:100%;
+  transition:border .3s ease;
+}
+.custom-area::placeholder { color:rgba(255,255,255,.2); }
+.custom-area:focus { border-color:var(--rose); }
+
+/* Buttons */
+.btn-rose {
+  background:var(--rose); color:white; border:none;
+  font-family:'DM Sans',sans-serif; font-size:.78rem;
+  font-weight:500; letter-spacing:.18em; text-transform:uppercase;
+  padding:16px; cursor:pointer; width:100%;
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  transition:all .3s ease;
+}
+.btn-rose:active { background:var(--rose2); }
+.btn-rose:disabled { opacity:.45; pointer-events:none; }
+
+/* Preview */
+.preview-box {
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.08);
+  padding:20px; display:none;
+}
+.preview-box.on { display:block; }
+.preview-label { font-size:.58rem; letter-spacing:.25em; text-transform:uppercase; color:var(--gold); margin-bottom:12px; }
+.preview-msg {
+  font-family:'Cormorant Garamond',serif; font-style:italic;
+  font-size:1.1rem; line-height:1.7; color:rgba(255,255,255,.82);
+}
+.approve-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:16px; }
+.btn-approve {
+  padding:13px; font-family:'DM Sans',sans-serif;
+  font-size:.72rem; letter-spacing:.12em; text-transform:uppercase;
+  cursor:pointer; transition:all .25s ease; border:none;
+}
+.btn-yes { background:rgba(176,84,114,.2); color:var(--rose); border:1px solid var(--rose) !important; border:none; }
+.btn-yes:active { background:var(--rose); color:white; }
+.btn-no  { background:rgba(255,255,255,.04); color:rgba(255,255,255,.4); border:1px solid rgba(255,255,255,.1) !important; border:none; }
+.btn-no:active  { background:rgba(255,255,255,.1); }
+
+/* History */
+.history-list { display:flex; flex-direction:column; gap:10px; }
+.history-item {
+  background:rgba(255,255,255,.03);
+  border-left:2px solid var(--rose);
+  padding:12px 16px;
+}
+.hist-meta {
+  display:flex; justify-content:space-between; align-items:center;
+  margin-bottom:6px;
+}
+.hist-date { font-size:.6rem; letter-spacing:.15em; text-transform:uppercase; color:var(--gold); }
+.hist-lover { font-size:.6rem; color:rgba(255,255,255,.25); }
+.hist-msg {
+  font-family:'Cormorant Garamond',serif; font-style:italic;
+  font-size:.95rem; color:rgba(255,255,255,.6); line-height:1.55;
+}
+.empty-state {
+  font-family:'Cormorant Garamond',serif; font-style:italic;
+  font-size:.9rem; color:rgba(255,255,255,.2);
+  text-align:center; padding:24px 0;
+}
+
+/* Back btn */
+.btn-back {
+  background:none; border:none; color:rgba(255,255,255,.3);
+  font-family:'DM Sans',sans-serif; font-size:.68rem;
+  letter-spacing:.15em; text-transform:uppercase;
+  padding:0; cursor:pointer; display:flex; align-items:center; gap:6px;
+}
+
+/* Toast */
+.toast {
+  position:fixed; bottom:32px; left:50%;
+  transform:translateX(-50%) translateY(16px);
+  background:var(--rose); color:white;
+  padding:11px 24px; font-size:.72rem;
+  letter-spacing:.12em; text-transform:uppercase;
+  opacity:0; transition:all .4s ease;
+  pointer-events:none; white-space:nowrap; z-index:999;
+}
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* Admin panel tabs */
+.tab-panel { display:none; flex-direction:column; gap:24px; }
+.tab-panel.active { display:flex; }
+</style>
+</head>
+<body>
+
+<!-- ════════ LOVER PAGE ════════ -->
+<div class="view active" id="loverPage">
+  <div class="bg-glow"></div>
+  <div class="petals" id="petalsEl"></div>
+  <div class="secret" id="secretBtn"></div>
+
+  <div class="lover-content">
+    <div class="wordmark">
+      <div class="wordmark-line"></div>
+      <div class="wordmark-text">Heartline</div>
+      <div class="wordmark-line right"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-eyebrow">A message for you</div>
+      <div class="card-date" id="loverDate"></div>
+      <span class="heart-beat">💕</span>
+      <div class="message-body in" id="loverMsg">
+        <div class="loading-wrap">
+          <div class="dots"><span></span><span></span><span></span></div>
+          <div class="loading-label">Something beautiful is coming…</div>
+        </div>
+      </div>
+      <div class="card-rule">✦</div>
+      <div class="card-sig" id="loverSig">Your David</div>
+    </div>
+
+    <div class="day-count" id="dayCount"></div>
+  </div>
+</div>
+
+
+<!-- ════════ PIN PAGE ════════ -->
+<div class="view" id="pinPage">
+  <div class="pin-wrap">
+    <div class="pin-logo">Heartline</div>
+    <div class="pin-tagline">Admin Access</div>
+
+    <div class="pin-label">Enter your PIN</div>
+    <div class="pin-dots" id="pinDots">
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+    </div>
+
+    <div class="pin-grid">
+      <button class="pin-key" onclick="pinKey('1')">1</button>
+      <button class="pin-key" onclick="pinKey('2')">2</button>
+      <button class="pin-key" onclick="pinKey('3')">3</button>
+      <button class="pin-key" onclick="pinKey('4')">4</button>
+      <button class="pin-key" onclick="pinKey('5')">5</button>
+      <button class="pin-key" onclick="pinKey('6')">6</button>
+      <button class="pin-key" onclick="pinKey('7')">7</button>
+      <button class="pin-key" onclick="pinKey('8')">8</button>
+      <button class="pin-key" onclick="pinKey('9')">9</button>
+      <button class="pin-key empty"></button>
+      <button class="pin-key" onclick="pinKey('0')">0</button>
+      <button class="pin-key del" onclick="pinDel()">⌫</button>
+    </div>
+    <div class="pin-error" id="pinError">Incorrect PIN — try again</div>
+  </div>
+</div>
+
+
+<!-- ════════ ADMIN PAGE ════════ -->
+<div class="view" id="adminPage">
+  <div class="admin-nav">
+    <div class="admin-brand">Heartline</div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div class="admin-tabs">
+        <button class="atab active" onclick="switchTab('compose',this)">Compose</button>
+        <button class="atab" onclick="switchTab('history',this)">History</button>
+      </div>
+      <button class="btn-back" onclick="showLover()">✕</button>
+    </div>
+  </div>
+
+  <div class="admin-body">
+
+    <!-- COMPOSE TAB -->
+    <div class="tab-panel active" id="tab-compose">
+
+      <!-- Lover selector -->
+      <div>
+        <div class="sec-label">Sending to</div>
+        <div class="lover-pills" id="loverPills"></div>
+      </div>
+
+      <!-- Mode -->
+      <div>
+        <div class="sec-label">Message type</div>
+        <div class="mode-grid">
+          <button class="mode-btn sel" data-mode="love" onclick="selMode(this)">
+            <span class="mi">💌</span>
+            <span class="mn">Love note</span>
+            <span class="md">Tender & romantic</span>
+          </button>
+          <button class="mode-btn" data-mode="reasons" onclick="selMode(this)">
+            <span class="mi">✨</span>
+            <span class="mn">Why she's amazing</span>
+            <span class="md">Her qualities & gifts</span>
+          </button>
+          <button class="mode-btn" data-mode="things" onclick="selMode(this)">
+            <span class="mi">🌸</span>
+            <span class="mn">Things I love</span>
+            <span class="md">Specific little things</span>
+          </button>
+          <button class="mode-btn" data-mode="custom" onclick="selMode(this)">
+            <span class="mi">🖊️</span>
+            <span class="mn">Direct it</span>
+            <span class="md">You guide the AI</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Custom textarea -->
+      <div id="customWrap" style="display:none;">
+        <div class="sec-label">Your direction to the AI</div>
+        <textarea class="custom-area" id="customText"
+          placeholder="e.g. 'Write about how she lights up every room she walks into'…"></textarea>
+      </div>
+
+      <!-- Generate -->
+      <button class="btn-rose" id="genBtn" onclick="generate()">
+        <span>✦</span> Generate message
+      </button>
+
+      <!-- Preview -->
+      <div class="preview-box" id="previewBox">
+        <div class="preview-label">Preview — does this feel right?</div>
+        <div class="preview-msg" id="previewMsg"></div>
+        <div class="approve-row">
+          <button class="btn-approve btn-yes" onclick="approve()">✓ &nbsp;Send it</button>
+          <button class="btn-approve btn-no"  onclick="reject()">↺ &nbsp;Regenerate</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- HISTORY TAB -->
+    <div class="tab-panel" id="tab-history">
+      <div>
+        <div class="sec-label">All messages sent</div>
+        <div class="history-list" id="historyList"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─────────────────────────────────────────
+//  CONFIG
+// ─────────────────────────────────────────
+const SUPABASE_URL = 'https://ugauzekmrnnggrepinlt.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_1dretVtElzMeODo6DsAB2Q_reDbIfvR';
+const ADMIN_ID     = '00000000-0000-0000-0000-000000000001';
+const SHALLON_ID   = '00000000-0000-0000-0000-000000000002';
+
+// ─────────────────────────────────────────
+//  SUPABASE REST HELPERS
+// ─────────────────────────────────────────
+const sb = {
+  headers: {
+    'Content-Type': 'application/json',
+    'apikey': SUPABASE_KEY,
+    'Authorization': `Bearer ${SUPABASE_KEY}`,
+    'Prefer': 'return=representation'
+  },
+
+  async get(table, query='') {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${query}`, { headers: this.headers });
+    return r.json();
+  },
+
+  async post(table, body) {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+      method:'POST', headers: this.headers, body: JSON.stringify(body)
+    });
+    return r.json();
+  },
+
+  async patch(table, query, body) {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${query}`, {
+      method:'PATCH', headers: this.headers, body: JSON.stringify(body)
+    });
+    return r.json();
+  },
+
+  async upsert(table, body, onConflict) {
+    const h = { ...this.headers, 'Prefer': `resolution=merge-duplicates,return=representation` };
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?on_conflict=${onConflict}`, {
+      method:'POST', headers: h, body: JSON.stringify(body)
+    });
+    return r.json();
+  }
+};
+
+// ─────────────────────────────────────────
+//  STATE
+// ─────────────────────────────────────────
+let currentLoverId   = SHALLON_ID;
+let currentLoverName = 'Mine';
+let currentMode      = 'love';
+let pendingMsg       = null;
+let allLovers        = [];
+let secretTaps       = 0;
+let secretTimer      = null;
+const today          = new Date().toISOString().split('T')[0];
+
+// ─────────────────────────────────────────
+//  INIT
+// ─────────────────────────────────────────
+window.addEventListener('load', () => {
+  buildPetals();
+  setLoverDate();
+  loadTodayMessage();
+});
+
+function setLoverDate() {
+  const d = new Date();
+  document.getElementById('loverDate').textContent =
+    d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}).toUpperCase();
+  const start = new Date('2024-01-01');
+  const days  = Math.floor((d - start) / 86400000);
+  document.getElementById('dayCount').textContent = `Day ${days} of forever ∞`;
+}
+
+// ─────────────────────────────────────────
+//  LOVER PAGE — load today's message
+// ─────────────────────────────────────────
+async function loadTodayMessage() {
+  try {
+    const rows = await sb.get('messages',
+      `lover_id=eq.${SHALLON_ID}&date=eq.${today}&approved=eq.true&select=message`);
+    if (rows && rows.length && rows[0].message) {
+      displayMsg(rows[0].message);
+    } else {
+      // Show yesterday's if nothing approved yet
+      const prev = await sb.get('messages',
+        `lover_id=eq.${SHALLON_ID}&approved=eq.true&order=date.desc&limit=1&select=message,date`);
+      if (prev && prev.length) {
+        displayMsg(prev[0].message);
+      } else {
+        displayMsg("You are my favourite part of every single day, Mine. 💕");
+      }
+    }
+  } catch {
+    displayMsg("You are my favourite part of every single day, Mine. 💕");
+  }
+}
+
+function displayMsg(msg) {
+  const el = document.getElementById('loverMsg');
+  el.classList.remove('in'); el.classList.add('out');
+  setTimeout(() => {
+    el.innerHTML = msg;
+    el.classList.remove('out'); el.classList.add('in');
+  }, 500);
+}
+
+// ─────────────────────────────────────────
+//  PETALS
+// ─────────────────────────────────────────
+function buildPetals() {
+  const c = document.getElementById('petalsEl');
+  for (let i = 0; i < 22; i++) {
+    const p = document.createElement('div');
+    p.className = 'petal';
+    p.style.cssText = `
+      left:${Math.random()*100}vw;
+      animation-duration:${7+Math.random()*9}s;
+      animation-delay:${Math.random()*14}s;
+      transform:rotate(${Math.random()*360}deg) scale(${.6+Math.random()*.7});
+    `;
+    c.appendChild(p);
+  }
+}
+
+// ─────────────────────────────────────────
+//  FLOATING HEARTS
+// ─────────────────────────────────────────
+document.getElementById('loverPage').addEventListener('click', e => {
+  if (e.target.closest('button,.secret')) return;
+  ['💕','❤️','🌸','✨','🌹'].sort(()=>Math.random()-.5).slice(0,3).forEach((emoji,i) => {
+    setTimeout(() => {
+      const h = document.createElement('div');
+      h.className = 'fheart';
+      h.textContent = emoji;
+      h.style.left = (e.clientX + (Math.random()-.5)*50) + 'px';
+      h.style.top  = e.clientY + 'px';
+      document.body.appendChild(h);
+      setTimeout(() => h.remove(), 3500);
+    }, i * 100);
+  });
+});
+
+// ─────────────────────────────────────────
+//  SECRET ADMIN TRIGGER (triple-tap top-right)
+// ─────────────────────────────────────────
+document.getElementById('secretBtn').addEventListener('click', () => {
+  secretTaps++;
+  clearTimeout(secretTimer);
+  secretTimer = setTimeout(() => { secretTaps = 0; }, 1600);
+  if (secretTaps >= 3) {
+    secretTaps = 0;
+    showPin();
+  }
+});
+
+// ─────────────────────────────────────────
+//  PIN
+// ─────────────────────────────────────────
+let pinVal = '';
+
+function showPin() {
+  pinVal = '';
+  updatePinDots();
+  show('pinPage');
+}
+
+function pinKey(k) {
+  if (pinVal.length >= 4) return;
+  pinVal += k;
+  updatePinDots();
+  if (pinVal.length === 4) setTimeout(checkPin, 200);
+}
+
+function pinDel() {
+  pinVal = pinVal.slice(0,-1);
+  updatePinDots();
+  document.getElementById('pinError').classList.remove('show');
+}
+
+function updatePinDots() {
+  document.querySelectorAll('.pin-dot').forEach((d,i) => {
+    d.classList.toggle('filled', i < pinVal.length);
+  });
+}
+
+async function checkPin() {
+  try {
+    const rows = await sb.get('admins',
+      `id=eq.${ADMIN_ID}&pin=eq.${pinVal}&select=id,name`);
+    if (rows && rows.length) {
+      showAdmin();
+    } else {
+      document.getElementById('pinError').classList.add('show');
+      pinVal = '';
+      updatePinDots();
+    }
+  } catch {
+    document.getElementById('pinError').classList.add('show');
+    pinVal = '';
+    updatePinDots();
+  }
+}
+
+// ─────────────────────────────────────────
+//  ADMIN
+// ─────────────────────────────────────────
+async function showAdmin() {
+  show('adminPage');
+  await loadLovers();
+  renderLoverPills();
+  switchTab('compose', document.querySelector('.atab'));
+}
+
+function showLover() {
+  show('loverPage');
+}
+
+async function loadLovers() {
+  try {
+    const rows = await sb.get('lovers', `admin_id=eq.${ADMIN_ID}&select=id,name,nickname`);
+    allLovers = rows || [];
+  } catch {
+    allLovers = [{ id: SHALLON_ID, name:'Shallon', nickname:'Mine' }];
+  }
+}
+
+function renderLoverPills() {
+  const el = document.getElementById('loverPills');
+  el.innerHTML = allLovers.map(l => `
+    <button class="lover-pill ${l.id===currentLoverId?'active':''}"
+      onclick="selectLover('${l.id}','${l.nickname||l.name}',this)">
+      ${l.nickname || l.name}
+    </button>
+  `).join('');
+}
+
+function selectLover(id, nickname, btn) {
+  currentLoverId   = id;
+  currentLoverName = nickname;
+  document.querySelectorAll('.lover-pill').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('previewBox').classList.remove('on');
+}
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.atab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  document.querySelectorAll('.atab').forEach(b=>{
+    if(b.textContent.toLowerCase().includes(name)) b.classList.add('active');
+  });
+  if (name === 'history') loadHistory();
+}
+
+function selMode(btn) {
+  document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+  currentMode = btn.dataset.mode;
+  document.getElementById('customWrap').style.display = currentMode==='custom'?'block':'none';
+  document.getElementById('previewBox').classList.remove('on');
+}
+
+// ─────────────────────────────────────────
+//  GENERATE
+// ─────────────────────────────────────────
+async function generate() {
+  const btn = document.getElementById('genBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span>⟳</span> Generating…';
+  document.getElementById('previewBox').classList.remove('on');
+
+  try {
+    const msg = await callClaude(buildPrompt());
+    pendingMsg = msg;
+    document.getElementById('previewMsg').textContent = msg;
+    document.getElementById('previewBox').classList.add('on');
+  } catch(e) {
+    toast('Could not generate — check connection');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<span>✦</span> Generate message';
+}
+
+async function approve() {
+  if (!pendingMsg) return;
+  try {
+    // Upsert: if a message exists for this lover+date, replace it
+    await sb.upsert('messages', {
+      lover_id: currentLoverId,
+      message:  pendingMsg,
+      mode:     currentMode,
+      date:     today,
+      approved: true
+    }, 'lover_id,date');
+
+    // Update lover page live if it's Shallon
+    if (currentLoverId === SHALLON_ID) {
+      displayMsg(pendingMsg);
+    }
+
+    document.getElementById('previewBox').classList.remove('on');
+    pendingMsg = null;
+    toast('✦ Message sent to ' + currentLoverName);
+  } catch {
+    toast('Error saving — try again');
+  }
+}
+
+function reject() {
+  document.getElementById('previewBox').classList.remove('on');
+  pendingMsg = null;
+}
+
+// ─────────────────────────────────────────
+//  HISTORY
+// ─────────────────────────────────────────
+async function loadHistory() {
+  const el = document.getElementById('historyList');
+  el.innerHTML = '<div class="empty-state">Loading…</div>';
+  try {
+    const rows = await sb.get('messages',
+      `approved=eq.true&order=date.desc&limit=60&select=message,date,mode,lover_id`);
+
+    if (!rows || !rows.length) {
+      el.innerHTML = '<div class="empty-state">No messages yet — compose your first one.</div>';
+      return;
+    }
+
+    el.innerHTML = rows.map(r => {
+      const lover = allLovers.find(l=>l.id===r.lover_id);
+      const name  = lover ? (lover.nickname||lover.name) : 'Someone';
+      const d     = new Date(r.date+'T12:00:00');
+      const label = d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+      return `
+        <div class="history-item">
+          <div class="hist-meta">
+            <span class="hist-date">${label}</span>
+            <span class="hist-lover">→ ${name}</span>
+          </div>
+          <div class="hist-msg">${r.message}</div>
+        </div>`;
+    }).join('');
+  } catch {
+    el.innerHTML = '<div class="empty-state">Could not load history.</div>';
+  }
+}
+
+// ─────────────────────────────────────────
+//  CLAUDE API
+// ─────────────────────────────────────────
+function buildPrompt() {
+  const base = `You are writing a single romantic message from David to his girlfriend ${currentLoverName==='Mine'?'Shallon':currentLoverName}, whom he lovingly calls "${currentLoverName}". The message should feel deeply personal, warm, and genuine — never generic or overly flowery. It should be 2–4 sentences. Address her as "${currentLoverName}" at least once naturally. Do not include a sign-off. No quotation marks. Return only the message, nothing else.`;
+
+  const modes = {
+    love:    `${base} Write a tender, heartfelt love note expressing how much she means to him. Vary the emotion — sometimes poetic, sometimes simple and direct.`,
+    reasons: `${base} Write about one specific reason why she is an incredible person — a quality, a strength, or something beautiful about who she is.`,
+    things:  `${base} Write about one or two small specific things David loves about her — the kind of details only someone truly in love would notice.`,
+    custom:  `${base} David's specific direction for today: "${document.getElementById('customText').value.trim() || 'Write something beautiful and loving'}". Follow his direction closely while keeping the tone natural.`
+  };
+
+  return modes[currentMode] || modes.love;
+}
+
+async function callClaude(prompt) {
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST',
+    headers:{ 'Content-Type':'application/json' },
+    body: JSON.stringify({
+      model:      'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      messages:   [{ role:'user', content: prompt }]
+    })
+  });
+  if (!r.ok) throw new Error('API error');
+  const data = await r.json();
+  return data.content.map(b=>b.text||'').join('').trim();
+}
+
+// ─────────────────────────────────────────
+//  HELPERS
+// ─────────────────────────────────────────
+function show(id) {
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
