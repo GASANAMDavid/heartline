@@ -434,12 +434,80 @@ body {
 /* Admin panel tabs */
 .tab-panel { display:none; flex-direction:column; gap:24px; }
 .tab-panel.active { display:flex; }
+
+/* ════════════════════════════════════
+   LOVER PIN PAGE
+════════════════════════════════════ */
+#loverPinPage {
+  background: var(--cream);
+  align-items:center; justify-content:center;
+  padding:40px 28px;
+}
+
+.lpin-wrap {
+  width:100%; max-width:340px;
+  display:flex; flex-direction:column; align-items:center;
+}
+
+.lpin-wordmark {
+  display:flex; align-items:center; gap:8px; margin-bottom:48px;
+}
+.lpin-line {
+  width:24px; height:1px;
+  background: linear-gradient(to right, transparent, var(--gold));
+}
+.lpin-line.r { background: linear-gradient(to left, transparent, var(--gold)); }
+.lpin-wordmark-text {
+  font-family:'Cormorant Garamond',serif; font-style:italic; font-weight:300;
+  font-size:.78rem; color:var(--gold); letter-spacing:.3em; text-transform:uppercase;
+}
+
+.lpin-prompt {
+  font-family:'Cormorant Garamond',serif; font-style:italic;
+  font-size:1.55rem; color:var(--ink); text-align:center;
+  line-height:1.6; margin-bottom:6px;
+}
+.lpin-hint {
+  font-size:.62rem; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--mist); text-align:center; margin-bottom:40px;
+}
+
+.lpin-input-row {
+  display:flex; align-items:center;
+  border-bottom:2px solid var(--mist);
+  width:100%; margin-bottom:10px;
+  transition: border-color .3s ease;
+}
+.lpin-input-row.focus { border-color:var(--rose); }
+
+.lpin-input {
+  flex:1; background:none; border:none; outline:none;
+  font-family:'Cormorant Garamond',serif; font-style:italic;
+  font-size:1.7rem; color:var(--ink); padding:10px 4px;
+  letter-spacing:.06em; text-align:center;
+  caret-color: var(--rose);
+}
+.lpin-input::placeholder { color:var(--mist); font-size:1.2rem; }
+
+.lpin-submit {
+  background:none; border:none; cursor:pointer;
+  font-size:1.3rem; padding:10px 6px; color:var(--rose);
+  transition: transform .3s ease;
+}
+.lpin-submit:active { transform:scale(.88); }
+
+.lpin-error {
+  font-size:.7rem; color:var(--rose); letter-spacing:.08em;
+  text-align:center; opacity:0; transition:opacity .3s ease;
+  margin-bottom:20px; height:16px;
+}
+.lpin-error.show { opacity:1; }
 </style>
 </head>
 <body>
 
 <!-- ════════ LOVER PAGE ════════ -->
-<div class="view active" id="loverPage">
+<div class="view" id="loverPage">
   <div class="bg-glow"></div>
   <div class="petals" id="petalsEl"></div>
   <div class="secret" id="secretBtn"></div>
@@ -462,10 +530,37 @@ body {
         </div>
       </div>
       <div class="card-rule">✦</div>
-      <div class="card-sig" id="loverSig">Your David</div>
+      <div class="card-sig" id="loverSig">Yours 🌹</div>
     </div>
 
     <div class="day-count" id="dayCount"></div>
+  </div>
+</div>
+
+
+<!-- ════════ LOVER PIN PAGE ════════ -->
+<div class="view active" id="loverPinPage">
+  <div class="lpin-wrap">
+    <div class="lpin-wordmark">
+      <div class="lpin-line"></div>
+      <div class="lpin-wordmark-text">Heartline</div>
+      <div class="lpin-line r"></div>
+    </div>
+
+    <div class="lpin-prompt">This is just for you…</div>
+    <div class="lpin-hint">Type the word that lives between our hearts</div>
+
+    <div class="lpin-input-row" id="lpinRow">
+      <input class="lpin-input" id="lpinInput" type="text"
+        placeholder="what are we to each other?" autocomplete="off" autocorrect="off"
+        spellcheck="false"
+        onfocus="document.getElementById('lpinRow').classList.add('focus')"
+        onblur="document.getElementById('lpinRow').classList.remove('focus')"
+        onkeydown="if(event.key==='Enter') checkLoverPin()"
+      />
+      <button class="lpin-submit" onclick="checkLoverPin()">→</button>
+    </div>
+    <div class="lpin-error" id="lpinError">Hmm, I don't recognise that name 💭</div>
   </div>
 </div>
 
@@ -658,14 +753,38 @@ const today          = new Date().toISOString().split('T')[0];
 window.addEventListener('load', () => {
   buildPetals();
   setLoverDate();
-  loadTodayMessage();
+  // Start on lover PIN — focus input
+  setTimeout(() => {
+    const inp = document.getElementById('lpinInput');
+    if (inp) inp.focus();
+  }, 400);
 });
+
+// ─────────────────────────────────────────
+//  LOVER PIN
+// ─────────────────────────────────────────
+const LOVER_PIN = 'mine'; // what Shallon types
+
+async function checkLoverPin() {
+  const val = document.getElementById('lpinInput').value.trim().toLowerCase();
+  const errEl = document.getElementById('lpinError');
+
+  if (val === LOVER_PIN) {
+    errEl.classList.remove('show');
+    show('loverPage');
+    loadTodayMessage();
+  } else {
+    errEl.classList.add('show');
+    document.getElementById('lpinInput').value = '';
+    setTimeout(() => errEl.classList.remove('show'), 2800);
+  }
+}
 
 function setLoverDate() {
   const d = new Date();
   document.getElementById('loverDate').textContent =
     d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}).toUpperCase();
-  const start = new Date('2024-01-01');
+  const start = new Date('2026-01-01');
   const days  = Math.floor((d - start) / 86400000);
   document.getElementById('dayCount').textContent = `Day ${days} of forever ∞`;
 }
@@ -962,13 +1081,11 @@ function buildPrompt() {
 }
 
 async function callClaude(prompt) {
-  const r = await fetch('https://api.anthropic.com/v1/messages', {
+  const r = await fetch('https://heartline-api.gmdavid59.workers.dev', {
     method:'POST',
     headers:{ 'Content-Type':'application/json' },
     body: JSON.stringify({
-      model:      'claude-sonnet-4-20250514',
-      max_tokens: 1000,
-      messages:   [{ role:'user', content: prompt }]
+      messages: [{ role:'user', content: prompt }]
     })
   });
   if (!r.ok) throw new Error('API error');
