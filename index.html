@@ -1085,16 +1085,32 @@ function buildPrompt() {
 }
 
 async function callClaude(prompt) {
-  const r = await fetch('https://heartline-api.gmdavid59.workers.dev', {
-    method:'POST',
-    headers:{ 'Content-Type':'application/json' },
-    body: JSON.stringify({
-      messages: [{ role:'user', content: prompt }]
-    })
-  });
-  if (!r.ok) throw new Error('API error');
-  const data = await r.json();
-  return data.content.map(b=>b.text||'').join('').trim();
+  try {
+    const r = await fetch('https://heartline-api.gmdavid59.workers.dev', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify({
+        messages: [{ role:'user', content: prompt }]
+      })
+    });
+    const data = await r.json();
+    if (!r.ok) {
+      toast('Error ' + r.status + ': ' + (data.error?.message || JSON.stringify(data)));
+      throw new Error('API error');
+    }
+    if (data.error) {
+      toast('Claude error: ' + data.error.message);
+      throw new Error(data.error.message);
+    }
+    return data.content.map(b=>b.text||'').join('').trim();
+  } catch(e) {
+    if (e.message === 'Failed to fetch') {
+      toast('Worker unreachable — check Cloudflare is deployed');
+    } else if (!e.message.includes('API error') && !e.message.includes('Claude error')) {
+      toast('Error: ' + e.message);
+    }
+    throw e;
+  }
 }
 
 // ─────────────────────────────────────────
